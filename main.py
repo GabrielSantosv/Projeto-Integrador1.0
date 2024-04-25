@@ -1,3 +1,11 @@
+#Introdução
+print("Seja Bem-vindo ao PYEstoque\n")
+print("Comece agora e simplifique sua vida empresarial.\n")
+
+cod_prod = input('Digite o código do produto: ') #chave-primaria sql
+nome_prod = input('Digite o nome do produto: ')
+descri_prod = input('Digite a Descrição do produto: ')
+
 while True: 
     try: 
         cp = int(input("Qual o custo do produto?"))
