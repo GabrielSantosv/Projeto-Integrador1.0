@@ -19,7 +19,7 @@ while True:
         #Descrição
     
         #Preço de Venda(PV)
-        print('\nO Preço de venda foi de ', round(pv), 'que é igual a 100% do valor final')
+        print('\nO Preço de venda foi de ', round(pv):1000.2f, 'que é igual a 100% do valor final')
             
         #Custo de Aquisição (Fornecedor)
         porcent = cp * 100 / pv
