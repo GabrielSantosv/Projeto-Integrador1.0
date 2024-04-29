@@ -6,24 +6,33 @@ cod_prod = input('Digite o código do produto: ') #chave-primaria sql
 nome_prod = input('Digite o nome do produto: ')
 descri_prod = input('Digite a Descrição do produto: ')
 
+def verificar_negativo(num):  #função para testar número negativo
+    if num < 0:
+        raise ValueError("Erro: O número não pode ser negativo.")
+    return num
+
 while True: 
     try: 
-        cp = int(input("Qual o custo do produto?"))
-        cf = int(input("Qual o custo fixo/administrativo?"))
-        cv = int(input("Qual a comissão de vendas?"))
-        iv = int(input("Qual é o imposto sobre a venda?"))
-        ml = int(input("Qual a margem de lucro desejada?"))
+        cp = int(input("\nQual o custo do produto?"))
+        cp= verificar_negativo(cp) #Verifica se o numero é interio
+        cf = int(input("\nQual o custo fixo/administrativo?"))
+        cf= verificar_negativo(cf) #Verifica se o numero é interio
+        cv = int(input("\nQual a comissão de vendas(%)?"))
+        cv= verificar_negativo(cv) #Verifica se o numero é interio
+        iv = int(input("\nQual é o imposto sobre a venda(%)?"))
+        iv= verificar_negativo(iv) #Verifica se o numero é interio
+        ml = int(input("\nQual a margem de lucro desejada(%)?"))
+        ml= verificar_negativo(ml) #Verifica se o numero é interio
         
         pv = cp/(1-((cf+cv+iv+ml)/100))
-        
         #Descrição
     
         #Preço de Venda(PV)
-        print('\nO Preço de venda foi de ', round(pv):1000.2f, 'que é igual a 100% do valor final')
+        print('\nO Preço de venda foi de ', round(pv), 'que é igual a 100% do valor final')
             
         #Custo de Aquisição (Fornecedor)
         porcent = cp * 100 / pv
-        print("\no preço do produto pelo fornecedor foi igual a", round(cp),' que é igual a', round(porcent), '% do valor final')
+        print("\nO preço do produto pelo fornecedor foi igual a R$", round(cp),' que é igual a', round(porcent),'%' 'do valor final')
            
         #Receita Bruta (A-B)
         bruto = pv - cp
@@ -67,12 +76,16 @@ while True:
         else:
             rentabilidade < 0 * 100
             print('sua classificação é de prejuizo')
-    
+    #Erro caso seja negativo o número
+    except ValueError as e:
+        print(e)
+    except Exception as e:
+        print("Um erro ocorreu:", e)
     except ValueError:
         print("Somente unidades numéricas!")
         
     while True:
-        resposta = input("Deseja continuar cotanto o preço (S/N)?").upper()
+        resposta = input("\nDeseja continuar cotanto o preço (S/N)?").upper()
         if resposta not in ["S", "N"]:
             print("A resposta deve ser S ou N; tente novamente!")
         else:
