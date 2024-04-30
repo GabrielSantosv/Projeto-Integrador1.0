@@ -13,16 +13,16 @@ def verificar_negativo(num):  #função para testar número negativo
 
 while True: 
     try: 
-        cp = int(input("\nQual o custo do produto?"))
-        cp= verificar_negativo(cp) #Verifica se o numero é interio
-        cf = int(input("\nQual o custo fixo/administrativo?"))
-        cf= verificar_negativo(cf) #Verifica se o numero é interio
-        cv = int(input("\nQual a comissão de vendas(%)?"))
-        cv= verificar_negativo(cv) #Verifica se o numero é interio
-        iv = int(input("\nQual é o imposto sobre a venda(%)?"))
-        iv= verificar_negativo(iv) #Verifica se o numero é interio
-        ml = int(input("\nQual a margem de lucro desejada(%)?"))
-        ml= verificar_negativo(ml) #Verifica se o numero é interio
+        cp = float(input("\nQual o custo do produto?"))
+        cp= verificar_negativo(cp) #Verifica se o numero é negativo
+        cf = float(input("\nQual o custo fixo/administrativo?"))
+        cf= verificar_negativo(cf) #Verifica se o numero é negativo
+        cv = float(input("\nQual a comissão de vendas(%)?"))
+        cv= verificar_negativo(cv) #Verifica se o numero é negativo
+        iv = float(input("\nQual é o imposto sobre a venda(%)?"))
+        iv= verificar_negativo(iv) #Verifica se o numero é negativo
+        ml = float(input("\nQual a margem de lucro desejada(%)?"))
+        ml= verificar_negativo(ml) #Verifica se o numero é negativo
         
         pv = cp/(1-((cf+cv+iv+ml)/100))
         #Descrição
