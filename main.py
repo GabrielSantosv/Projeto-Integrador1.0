@@ -37,7 +37,7 @@ while True:
         #Receita Bruta (A-B)
         bruto = pv - cp
         porcent1 = (bruto * 100) / pv
-        print(f"\na receita bruta foi de R${round(bruto):.2F} que é igual a round(porcent1)% do valor final")
+        print(f"\na receita bruta foi de R${round(bruto):.2F} que é igual a {round(porcent1)}% do valor final")
             
         #Custo Fixo/Administrativo
         valorCF = pv * cf / 100
