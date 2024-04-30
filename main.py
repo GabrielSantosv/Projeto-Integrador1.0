@@ -64,10 +64,10 @@ while True:
         if rentabilidade >= 0.20 * pv:
             print('sua classificação é de nivel alto')
               
-        elif rentabilidade >= 0.10 * pv < 0.20 * pv:
+        elif rentabilidade >= 0.10 * pv and rentabilidade < 0.20 * pv:
             print('sua classificação é de nivel médio')
               
-        elif rentabilidade > 0 * 100 < 0.10 * 100:
+        elif rentabilidade > 0 * 100 and rentabilidade < 0.10 * 100:
             print('sua classificação é de nivel baixo')
               
         elif rentabilidade == 0:
