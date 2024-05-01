@@ -13,15 +13,15 @@ def verificar_negativo(num):  #função para testar número negativo
 
 while True: 
     try: 
-        cp = float(input("\nQual o custo do produto?"))
+        cp = float(input("\nQual o custo do produto? ").replace(",","."))   #replace usado para alterar caso o usuaria coloque uma vírgua no lugar do ponto
         cp= verificar_negativo(cp) #Verifica se o numero é negativo
-        cf = float(input("\nQual o custo fixo/administrativo?"))
+        cf = float(input("\nQual o custo fixo/administrativo? ").replace(",","."))
         cf= verificar_negativo(cf) #Verifica se o numero é negativo
-        cv = float(input("\nQual a comissão de vendas(%)?"))
+        cv = float(input("\nQual a comissão de vendas(%)?").replace(",","."))
         cv= verificar_negativo(cv) #Verifica se o numero é negativo
-        iv = float(input("\nQual é o imposto sobre a venda(%)?"))
+        iv = float(input("\nQual é o imposto sobre a venda(%)? ").replace(",","."))
         iv= verificar_negativo(iv) #Verifica se o numero é negativo
-        ml = float(input("\nQual a margem de lucro desejada(%)?"))
+        ml = float(input("\nQual a margem de lucro desejada(%)? ").replace(",","."))
         ml= verificar_negativo(ml) #Verifica se o numero é negativo
         
         pv = cp/(1-((cf+cv+iv+ml)/100))
