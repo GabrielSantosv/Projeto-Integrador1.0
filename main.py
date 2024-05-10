@@ -1,18 +1,29 @@
+from mysql.connector import connect
+from tabulate import tabulate
+def obtemConexaoComMySQL (servidor, usuario, senha, bd): #Função de conexão ao MYSQL
+    if obtemConexaoComMySQL.conexao==None:
+        obtemConexaoComMySQL.conexao = \
+        connect(host="127.0.0.1", user="root", passwd="Cauekenzo071525.", database="puccamp")
+    return obtemConexaoComMySQL.conexao
+obtemConexaoComMySQL.conexao=None
+
 #Introdução
 print("Seja Bem-vindo ao PYEstoque\n")
 print("Comece agora e simplifique sua vida empresarial.\n")
 
-cod_prod = input('Digite o código do produto: ') #chave-primaria sql
-nome_prod = input('Digite o nome do produto: ')
-descri_prod = input('Digite a Descrição do produto: ')
+while True:
+    try:
+        cod_prod = input('Digite o código do produto: ') #chave-primaria sql
+        nome_prod = input('Digite o nome do produto: ')
+        descri_prod = input('Digite a Descrição do produto: ')
 
-def verificar_negativo(num):  #função para testar número negativo
-    if num < 0:
-        raise ValueError("Erro: O número não pode ser negativo.")
-    return num
-
-while True: 
-    try: 
+        def verificar_negativo(num):  #função para testar número negativo
+            if num < 0:
+                raise ValueError("Erro: O número não pode ser negativo.")
+            return num
+        
+        #Pegando as informcações de custo. imposto, comissão, custo fixo e margem de lucro do produto
+    
         custo_produto = float(input("\nQual o custo do produto? ").replace(",","."))   #replace usado para alterar caso o usuaria coloque uma vírgua no lugar do ponto
         custo_produto= verificar_negativo(custo_produto) #Verifica se o numero é negativo
         custo_fixo = float(input("\nQual o custo fixo/administrativo? ").replace(",","."))
@@ -85,7 +96,7 @@ while True:
         print("Somente unidades numéricas!")
         
     while True:
-        resposta = input("\nDeseja continuar cotanto o preço (S/N)?").upper()
+        resposta = input("\nDeseja continuar adicionando produtos (S/N)?").upper()
         if resposta not in ["S", "N"]:
             print("A resposta deve ser S ou N; tente novamente!")
         else:
