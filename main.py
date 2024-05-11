@@ -1,11 +1,41 @@
 from mysql.connector import connect
 from tabulate import tabulate
-def obtemConexaoComMySQL (servidor, usuario, senha, bd): #Função de conexão ao MYSQL
-    if obtemConexaoComMySQL.conexao==None:
-        obtemConexaoComMySQL.conexao = \
-        connect(host="127.0.0.1", user="root", passwd="Cauekenzo071525.", database="puccamp")
-    return obtemConexaoComMySQL.conexao
-obtemConexaoComMySQL.conexao=None
+conexao_mysql = None
+
+def obtemConexaoComMySQL(servidor, usuario, senha, bd): 
+    global conexao_mysql
+    try:
+        # Verifica se a conexão já foi estabelecida ou se ela está ativa
+        if conexao_mysql is None or not conexao_mysql.is_connected():
+            # Estabelece a conexão
+            conexao_mysql = connect(host=servidor, user=usuario, passwd=senha, database=bd)
+        return conexao_mysql
+    except Exception as e:
+        print("Erro ao conectar ao MySQL:", e)
+        return None
+
+#Insere uma linha de valores desejados na tabela
+def inserirValores(cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, rentabilidade):
+    comando = "INSERT INTO produtos (cod_prod, nome_prod, descri_prod, custo_prod, custo_fixo, comissao_venda, imposto_venda, rentabilidade) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+    valores = (cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, rentabilidade)
+    conexao = obtemConexaoComMySQL("127.0.0.1", "root", "Cauekenzo071525.", "puccamp")
+    cursor = conexao.cursor()
+    cursor.execute(comando, valores)
+    conexao.commit()
+    cursor.close()
+    conexao.close()
+    valoresAtualizados()
+
+def retornoDados (): #Função que retorna os dados atualizados após alguma alteração
+    comando = "select * from PRODUTOS"
+    conexao=obtemConexaoComMySQL("127.0.0.1","root","Cauekenzo071525.","puccamp")
+    cursor=conexao.cursor()
+    cursor.execute(comando)
+    return cursor.fetchall()
+
+def valoresAtualizados (): #Printa a tabela com os dados atualizados
+    novosValores = retornoDados()
+    print(tabulate(novosValores, headers = col_nomes))
 
 #Introdução
 print("Seja Bem-vindo ao PYEstoque\n")
@@ -13,15 +43,19 @@ print("Comece agora e simplifique sua vida empresarial.\n")
 
 while True:
     try:
-        cod_prod = input('Digite o código do produto: ') #chave-primaria sql
-        nome_prod = input('Digite o nome do produto: ')
-        descri_prod = input('Digite a Descrição do produto: ')
+        col_nomes = ["Código do produto","Nome do produto ","Descrição do produto", "Custo do produto", "Custo fixo", "Comissão de vendas", "Imposto sobre as vendas", "Rentabilidade"]
+        
+        
+        
+        cod_prod = input ('Digite o código do produto: ') #chave-primaria sql
+        nome_prod = input ('Digite o nome do produto: ')
+        descri_prod = input ('Digite a Descrição do produto: ')
 
         def verificar_negativo(num):  #função para testar número negativo
             if num < 0:
                 raise ValueError("Erro: O número não pode ser negativo.")
             return num
-        
+                
         #Pegando as informcações de custo. imposto, comissão, custo fixo e margem de lucro do produto
     
         custo_produto = float(input("\nQual o custo do produto? ").replace(",","."))   #replace usado para alterar caso o usuaria coloque uma vírgua no lugar do ponto
@@ -87,6 +121,10 @@ while True:
         else:
             rentabilidade < 0 * 100
             print('sua classificação é de prejuizo')
+        inserirValores(cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, rentabilidade)
+        todosValores = retornoDados()
+        print(tabulate(todosValores, headers=col_nomes))
+   
     #Erro caso seja negativo o número
     except ValueError as e:
         print(e)
