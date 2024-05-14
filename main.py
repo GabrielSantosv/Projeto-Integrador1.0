@@ -15,9 +15,9 @@ def obtemConexaoComMySQL(servidor, usuario, senha, bd):
         return None
 
 #Insere uma linha de valores desejados na tabela
-def inserirValores(cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, rentabilidade):
-    comando = "INSERT INTO produtos (cod_prod, nome_prod, descri_prod, custo_prod, custo_fixo, comissao_venda, imposto_venda, rentabilidade) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-    valores = (cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, rentabilidade)
+def inserirValores(cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, margem_lucro):
+    comando = "INSERT INTO PRODUTOS (cod_prod, nome_prod, descri_prod, custo_prod, custo_fixo, comissao_venda, imposto_venda, margem_lucro) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+    valores = (cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, margem_lucro)
     conexao = obtemConexaoComMySQL("127.0.0.1", "root", "Cauekenzo071525.", "puccamp")
     cursor = conexao.cursor()
     cursor.execute(comando, valores)
@@ -25,6 +25,17 @@ def inserirValores(cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, 
     cursor.close()
     conexao.close()
     valoresAtualizados()
+
+def inserir_calculos(preco_venda, bruto, ValorCustoFixo, ValorComissaoVendas, ValorImpostoVenda, resto, rentabilidade):
+    comando = "INSERT INTO CALCULANDO (preco_venda, bruto, ValorCustoFixo, ValorComissaoVendas, ValorImpostoVenda, resto, rentabilidade) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+    valores = (preco_venda, bruto, ValorCustoFixo, ValorComissaoVendas, ValorImpostoVenda, resto, rentabilidade)
+    conexao = obtemConexaoComMySQL("127.0.0.1", "root", "Cauekenzo071525.", "puccamp")
+    cursor = conexao.cursor()
+    cursor.execute(comando, valores)
+    conexao.commit()
+    cursor.close()
+    conexao.close()
+    valoresCalculados()
 
 def retornoDados (): #Função que retorna os dados atualizados após alguma alteração
     comando = "select * from PRODUTOS"
@@ -37,15 +48,26 @@ def valoresAtualizados (): #Printa a tabela com os dados atualizados
     novosValores = retornoDados()
     print(tabulate(novosValores, headers = col_nomes))
 
+def retornoCalculos (): #Função que retorna os dados atualizados após alguma alteração
+    comando = "select * from CALCULANDO"
+    conexao=obtemConexaoComMySQL("127.0.0.1","root","Cauekenzo071525.","puccamp")
+    cursor=conexao.cursor()
+    cursor.execute(comando)
+    return cursor.fetchall()
+
+def valoresCalculados (): #Printa a tabela com os dados atualizados
+    novosCalculos = retornoCalculos()
+    print(tabulate(novosCalculos, headers = col_names))
+
 #Introdução
 print("Seja Bem-vindo ao PYEstoque\n")
 print("Comece agora e simplifique sua vida empresarial.\n")
 
 while True:
     try:
-        col_nomes = ["Código do produto","Nome do produto ","Descrição do produto", "Custo do produto", "Custo fixo", "Comissão de vendas", "Imposto sobre as vendas", "Rentabilidade"]
+        col_nomes = ["Código do produto","Nome do produto ","Descrição do produto", "Custo do produto", "Custo fixo %", "Comissão de vendas %", "Imposto sobre as vendas %", "Margem de lucro %"]
         
-        
+        col_names = ["Preço de Venda R$", "Receita bruta R$", "Custo fixo/administrativo R$", "Comissão de vendas R$", "Impostos R$", "Rentabilidade R$"]
         
         cod_prod = input ('Digite o código do produto: ') #chave-primaria sql
         nome_prod = input ('Digite o nome do produto: ')
@@ -107,24 +129,28 @@ while True:
 
         #Margem de lucro
         if rentabilidade >= 0.20 * preco_venda:
-            print('sua classificação é de nivel alto')
+            print('sua classificação é de nivel alto\n')
               
         elif rentabilidade >= 0.10 * preco_venda and rentabilidade < 0.20 * preco_venda:
-            print('sua classificação é de nivel médio')
+            print('sua classificação é de nivel médio\n')
               
         elif rentabilidade > 0 * 100 and rentabilidade < 0.10 * 100:
-            print('sua classificação é de nivel baixo')
+            print('sua classificação é de nivel baixo\n')
               
         elif rentabilidade == 0:
-            print('sua classificação é de nivel equilibrado')
+            print('sua classificação é de nivel equilibrado\n')
               
         else:
             rentabilidade < 0 * 100
-            print('sua classificação é de prejuizo')
-        inserirValores(cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, rentabilidade)
+            print('sua classificação é de prejuizo\n')
+        
+        inserirValores(cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, margem_lucro)
         todosValores = retornoDados()
         print(tabulate(todosValores, headers=col_nomes))
-   
+
+        inserir_calculos(preco_venda, bruto, ValorCustoFixo, ValorComissaoVendas, ValorImpostoVenda, resto, rentabilidade)
+        novosCalculos = retornoCalculos()
+        print(tabulate(novosCalculos, headers=col_names))
     #Erro caso seja negativo o número
     except ValueError as e:
         print(e)
