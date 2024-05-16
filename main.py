@@ -1,13 +1,9 @@
 from mysql.connector import connect
-
-#Importa decimal para float, pois estamos pegando dados do BD para fazer contas em python.
 from decimal import Decimal
-
-#Para pegar somente os que foi transferido para o BD na hora, para fazer o print dos dados bonitnho.
 from datetime import datetime
 
 conexao_mysql = None
-#Função para conectar no BD
+
 def obtemConexaoComMySQL(servidor, usuario, senha, bd): 
     global conexao_mysql
     try:
@@ -18,7 +14,6 @@ def obtemConexaoComMySQL(servidor, usuario, senha, bd):
         print("Erro ao conectar ao MySQL:", e)
         return None
 
-#Função para inserir valores no BD
 def inserirValores(cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, margem_lucro):
     comando = "INSERT INTO PRODUTOS (cod_prod, nome_prod, descri_prod, custo_prod, custo_fixo, comissao_venda, imposto_venda, margem_lucro, data_insercao) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW())"
     valores = (cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, margem_lucro)
@@ -29,7 +24,6 @@ def inserirValores(cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, 
     cursor.close()
     conexao.close()
 
-#Função para selecionar os valores no BD
 def retornoDados():
     comando = "SELECT * FROM PRODUTOS WHERE data_insercao >= %s"
     data_atual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -70,15 +64,12 @@ while True:
         margem_lucro = float(input("\nQual a margem de lucro desejada(%)? ").replace(",","."))
         margem_lucro = verificar_negativo(margem_lucro)
         
-        #Inseri valores no BD
         inserirValores(cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, margem_lucro)
-        
-        #Recebe os valores do BD e printa
+
         dados_produtos = retornoDados()
         print("\nDados inseridos na tabela PRODUTOS:\n")
         print(dados_produtos)
         
-        #Pega os valores do bando de dados para usar nas contas
         for produto in dados_produtos:
             cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, margem_lucro, data_insercao = produto 
             
