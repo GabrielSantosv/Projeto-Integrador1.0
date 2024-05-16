@@ -123,19 +123,8 @@ while True:
             ["Rentabilidade", f"R${rentabilidade:.2f}", f"{round(margem_lucro):.2f}%"],
             ]
             print(f"\nProduto: {nome_prod}\n")
-<<<<<<< HEAD
-            print(f"Preço de venda: R${preco_venda} 100% do valor final\n")
-            print(f"Preço do custo de aquisição: R${round(custo_produto):.2f} - {round(porcent_custo):.2f}%\n")
-            print(f"Receita bruta: R${round(bruto):.2f} - {round(porcent_receita):.2f}%\n")
-            print(f"Valor do custo fixo/administrativo: R${round(ValorCustoFixo):.2f} - {round(custo_fixo):.2f}%\n")
-            print(f"Valor da comissão de vendas: R${round(ValorComissaoVendas):.2f} - {round(comissao_venda):.2f}%\n")
-            print(f"Valor do imposto sobre a venda: R${round(ValorImpostoVenda):.2f} - {round(imposto_venda):.2f}%\n")
-            print(f"Valor de outros custos: R${round(resto):.2f} - {round(porcent_outros):.2f}%\n")
-            print(f"Rentabilidade: R${rentabilidade:.2f} - {round(margem_lucro):.2f}%\n")
-=======
             # Use a função tabulate para formatar os dados em uma tabela
             print(tabulate(tabela_dados, headers=["Descrição", "Valor", "Porcentagem"]))
->>>>>>> feature
 
             if rentabilidade >= 0.20 * preco_venda:
                 print('\nSua classificação é de nível alto')
