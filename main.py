@@ -6,6 +6,8 @@ from decimal import Decimal
 #Para pegar somente os que foi transferido para o BD na hora, para fazer o print dos dados bonitnho.
 from datetime import datetime
 
+#Printar em tabela 
+from tabulate import tabulate 
 conexao_mysql = None
 #Função para conectar no BD
 def obtemConexaoComMySQL(servidor, usuario, senha, bd): 
@@ -110,7 +112,18 @@ while True:
             
             rentabilidade = bruto - resto
                     
+            tabela_dados = [
+            ["Preço de venda", f"R${preco_venda}", "100%"],
+            ["Preço do custo de aquisição", f"R${round(custo_produto):.2f}", f"{round(porcent_custo):.2f}%"],
+            ["Receita bruta", f"R${round(bruto):.2f}", f"{round(porcent_receita):.2f}%"],
+            ["Valor do custo fixo/administrativo", f"R${round(ValorCustoFixo):.2f}", f"{round(custo_fixo):.2f}%"],
+            ["Valor da comissão de vendas", f"R${round(ValorComissaoVendas):.2f}", f"{round(comissao_venda):.2f}%"],
+            ["Valor do imposto sobre a venda", f"R${round(ValorImpostoVenda):.2f}", f"{round(imposto_venda):.2f}%"],
+            ["Valor de outros custos", f"R${round(resto):.2f}", f"{round(porcent_outros):.2f}%"],
+            ["Rentabilidade", f"R${rentabilidade:.2f}", f"{round(margem_lucro):.2f}%"],
+            ]
             print(f"\nProduto: {nome_prod}\n")
+<<<<<<< HEAD
             print(f"Preço de venda: R${preco_venda} 100% do valor final\n")
             print(f"Preço do custo de aquisição: R${round(custo_produto):.2f} - {round(porcent_custo):.2f}%\n")
             print(f"Receita bruta: R${round(bruto):.2f} - {round(porcent_receita):.2f}%\n")
@@ -119,17 +132,21 @@ while True:
             print(f"Valor do imposto sobre a venda: R${round(ValorImpostoVenda):.2f} - {round(imposto_venda):.2f}%\n")
             print(f"Valor de outros custos: R${round(resto):.2f} - {round(porcent_outros):.2f}%\n")
             print(f"Rentabilidade: R${rentabilidade:.2f} - {round(margem_lucro):.2f}%\n")
+=======
+            # Use a função tabulate para formatar os dados em uma tabela
+            print(tabulate(tabela_dados, headers=["Descrição", "Valor", "Porcentagem"]))
+>>>>>>> feature
 
             if rentabilidade >= 0.20 * preco_venda:
-                print('Sua classificação é de nível alto')
+                print('\nSua classificação é de nível alto')
             elif 0.10 * preco_venda <= rentabilidade < 0.20 * preco_venda:
-                print('Sua classificação é de nível médio')
+                print('\nSua classificação é de nível médio')
             elif 0 <= rentabilidade < 0.10 * preco_venda:
-                print('Sua classificação é de nível baixo')
+                print('\nSua classificação é de nível baixo')
             elif rentabilidade == 0:
-                print('Sua classificação é de nível equilibrado')
+                print('\nSua classificação é de nível equilibrado')
             else:
-                print('Você está com prejuízo')
+                print('\nVocê está com prejuízo')
 
     except ValueError as e:
         print(e)
