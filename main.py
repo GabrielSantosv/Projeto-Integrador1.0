@@ -1,22 +1,26 @@
 from mysql.connector import connect
-from tabulate import tabulate
-conexao_mysql = None
 
+#Importa decimal para float, pois estamos pegando dados do BD para fazer contas em python.
+from decimal import Decimal
+
+#Para pegar somente os que foi transferido para o BD na hora, para fazer o print dos dados bonitnho.
+from datetime import datetime
+
+conexao_mysql = None
+#Função para conectar no BD
 def obtemConexaoComMySQL(servidor, usuario, senha, bd): 
     global conexao_mysql
     try:
-        # Verifica se a conexão já foi estabelecida ou se ela está ativa
         if conexao_mysql is None or not conexao_mysql.is_connected():
-            # Estabelece a conexão
             conexao_mysql = connect(host=servidor, user=usuario, passwd=senha, database=bd)
         return conexao_mysql
     except Exception as e:
         print("Erro ao conectar ao MySQL:", e)
         return None
 
-#Insere uma linha de valores desejados na tabela
+#Função para inserir valores no BD
 def inserirValores(cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, margem_lucro):
-    comando = "INSERT INTO PRODUTOS (cod_prod, nome_prod, descri_prod, custo_prod, custo_fixo, comissao_venda, imposto_venda, margem_lucro) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+    comando = "INSERT INTO PRODUTOS (cod_prod, nome_prod, descri_prod, custo_prod, custo_fixo, comissao_venda, imposto_venda, margem_lucro, data_insercao) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW())"
     valores = (cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, margem_lucro)
     conexao = obtemConexaoComMySQL("127.0.0.1", "root", "Cauekenzo071525.", "puccamp")
     cursor = conexao.cursor()
@@ -24,134 +28,118 @@ def inserirValores(cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, 
     conexao.commit()
     cursor.close()
     conexao.close()
-    valoresAtualizados()
 
-def inserir_calculos(preco_venda, bruto, ValorCustoFixo, ValorComissaoVendas, ValorImpostoVenda, resto, rentabilidade):
-    comando = "INSERT INTO CALCULANDO (preco_venda, bruto, ValorCustoFixo, ValorComissaoVendas, ValorImpostoVenda, resto, rentabilidade) VALUES (%s, %s, %s, %s, %s, %s, %s)"
-    valores = (preco_venda, bruto, ValorCustoFixo, ValorComissaoVendas, ValorImpostoVenda, resto, rentabilidade)
+#Função para selecionar os valores no BD
+def retornoDados():
+    comando = "SELECT * FROM PRODUTOS WHERE data_insercao >= %s"
+    data_atual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     conexao = obtemConexaoComMySQL("127.0.0.1", "root", "Cauekenzo071525.", "puccamp")
     cursor = conexao.cursor()
-    cursor.execute(comando, valores)
-    conexao.commit()
+    cursor.execute(comando, (data_atual,))
+    dadosSelecionados = cursor.fetchall()
     cursor.close()
     conexao.close()
-    valoresCalculados()
+    
+    # Converter os valores Decimal para float
+    dados_convertidos = []
+    for produto in dadosSelecionados:
+        produto_convertido = list(produto)
+        for i, valor in enumerate(produto):
+            if isinstance(valor, Decimal):
+                produto_convertido[i] = float(valor)
+        dados_convertidos.append(produto_convertido)
+    
+    return dados_convertidos
 
-def retornoDados (): #Função que retorna os dados atualizados após alguma alteração
-    comando = "select * from PRODUTOS"
-    conexao=obtemConexaoComMySQL("127.0.0.1","root","Cauekenzo071525.","puccamp")
-    cursor=conexao.cursor()
-    cursor.execute(comando)
-    return cursor.fetchall()
-
-def valoresAtualizados (): #Printa a tabela com os dados atualizados
-    novosValores = retornoDados()
-    print(tabulate(novosValores, headers = col_nomes))
-
-def retornoCalculos (): #Função que retorna os dados atualizados após alguma alteração
-    comando = "select * from CALCULANDO"
-    conexao=obtemConexaoComMySQL("127.0.0.1","root","Cauekenzo071525.","puccamp")
-    cursor=conexao.cursor()
-    cursor.execute(comando)
-    return cursor.fetchall()
-
-def valoresCalculados (): #Printa a tabela com os dados atualizados
-    novosCalculos = retornoCalculos()
-    print(tabulate(novosCalculos, headers = col_names))
-
-#Introdução
 print("Seja Bem-vindo ao PYEstoque\n")
 print("Comece agora e simplifique sua vida empresarial.\n")
 
 while True:
     try:
-        col_nomes = ["Código do produto","Nome do produto ","Descrição do produto", "Custo do produto", "Custo fixo %", "Comissão de vendas %", "Imposto sobre as vendas %", "Margem de lucro %"]
-        
-        col_names = ["Preço de Venda R$", "Receita bruta R$", "Custo fixo/administrativo R$", "Comissão de vendas R$", "Impostos R$", "Rentabilidade R$"]
-        
-        cod_prod = input ('Digite o código do produto: ') #chave-primaria sql
-        nome_prod = input ('Digite o nome do produto: ')
-        descri_prod = input ('Digite a Descrição do produto: ')
+        cod_prod = input('Digite o código do produto: ')
+        nome_prod = input('Digite o nome do produto: ')
+        descri_prod = input('Digite a Descrição do produto: ')
 
-        def verificar_negativo(num):  #função para testar número negativo
+        def verificar_negativo(num):
             if num < 0:
                 raise ValueError("Erro: O número não pode ser negativo.")
             return num
-                
-        #Pegando as informcações de custo. imposto, comissão, custo fixo e margem de lucro do produto
-    
-        custo_produto = float(input("\nQual o custo do produto? ").replace(",","."))   #replace usado para alterar caso o usuaria coloque uma vírgua no lugar do ponto
-        custo_produto= verificar_negativo(custo_produto) #Verifica se o numero é negativo
+        
+        custo_produto = float(input("\nQual o custo do produto? ").replace(",","."))
+        custo_produto = verificar_negativo(custo_produto)
+        
         custo_fixo = float(input("\nQual o custo fixo/administrativo? ").replace(",","."))
-        custo_fixo= verificar_negativo(custo_fixo) #Verifica se o numero é negativo
+        custo_fixo = verificar_negativo(custo_fixo)
+        
         comissao_venda = float(input("\nQual a comissão de vendas(%)?").replace(",","."))
-        comissao_venda= verificar_negativo(comissao_venda) #Verifica se o numero é negativo
+        comissao_venda = verificar_negativo(comissao_venda)
+        
         imposto_venda = float(input("\nQual é o imposto sobre a venda(%)? ").replace(",","."))
-        imposto_venda= verificar_negativo(imposto_venda) #Verifica se o numero é negativo
+        imposto_venda = verificar_negativo(imposto_venda)
+        
         margem_lucro = float(input("\nQual a margem de lucro desejada(%)? ").replace(",","."))
-        margem_lucro= verificar_negativo(margem_lucro) #Verifica se o numero é negativo
+        margem_lucro = verificar_negativo(margem_lucro)
         
-        preco_venda = custo_produto/(1-((custo_fixo+comissao_venda+imposto_venda+margem_lucro)/100))
-        #Descrição
-    
-        #Preço de Venda(PV)
-        print(f"\nO Preço de venda foi de R${round(preco_venda):.2f} que é igual a 100% do valor final")
-            
-        #Custo de Aquisição (Fornecedor)
-        porcent = custo_produto * 100 / preco_venda
-        print(f"\nO preço do produto pelo fornecedor foi igual a R${round(custo_produto):.2f} que é igual a {round(porcent)}% do valor final")
-           
-        #Receita Bruta (A-B)
-        bruto = preco_venda - custo_produto
-        porcent1 = (bruto * 100) / preco_venda
-        print(f"\na receita bruta foi de R${round(bruto):.2F} que é igual a {round(porcent1)}% do valor final")
-            
-        #Custo Fixo/Administrativo
-        ValorCustoFixo = preco_venda * custo_fixo / 100
-        print(f"\no custo fixo foi de R${round(ValorCustoFixo):.2f} que é igual a {round(custo_fixo)}% do valor final")
-            
-         #Comissão de Vendas
-        ValorComissaoVendas = preco_venda * comissao_venda / 100
-        print(f"\na comissao foi de R${round(ValorComissaoVendas):.2f} que é igual a {round(comissao_venda)}% do valor final")
-            
-         #Impostos
-        ValorImpostoVenda = preco_venda * imposto_venda / 100
-        print(f"\no valor do imposto foi de R${round(ValorImpostoVenda):.2f} que é igual a {round(imposto_venda)}% do valor final")
-            
-        #Outros custos (D+E+F)
-        resto = ValorCustoFixo + ValorComissaoVendas + ValorImpostoVenda
-        porcent2 = custo_fixo + comissao_venda + imposto_venda
-        print(f"\noutros custos R${round(resto):.2f} que é igual a {round(porcent2)}% do valor final")
-            
-        #Rentabilidade (C-G)
-        rentabilidade = bruto - resto
-        print(f"\na rentabilidade foi de R${round(rentabilidade):.2f} que é igual a {round(margem_lucro)}% do valor final\n")
-
-        #Margem de lucro
-        if rentabilidade >= 0.20 * preco_venda:
-            print('sua classificação é de nivel alto\n')
-              
-        elif rentabilidade >= 0.10 * preco_venda and rentabilidade < 0.20 * preco_venda:
-            print('sua classificação é de nivel médio\n')
-              
-        elif rentabilidade > 0 * 100 and rentabilidade < 0.10 * 100:
-            print('sua classificação é de nivel baixo\n')
-              
-        elif rentabilidade == 0:
-            print('sua classificação é de nivel equilibrado\n')
-              
-        else:
-            rentabilidade < 0 * 100
-            print('sua classificação é de prejuizo\n')
-        
+        #Inseri valores no BD
         inserirValores(cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, margem_lucro)
-        todosValores = retornoDados()
-        print(tabulate(todosValores, headers=col_nomes))
+        
+        #Recebe os valores do BD e printa
+        dados_produtos = retornoDados()
+        print("\nDados inseridos na tabela PRODUTOS:\n")
+        print(dados_produtos)
+        
+        #Pega os valores do bando de dados para usar nas contas
+        for produto in dados_produtos:
+            cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, margem_lucro, data_insercao = produto
+            
+            #Calculando preço de venda
+            preco_venda = custo_produto / (1 - ((custo_fixo + comissao_venda + imposto_venda + margem_lucro) / 100))
+        
+            #Custo de aquisição (Fornecedor)
+            porcent_custo = custo_produto * 100 / preco_venda
+            
+            #Receita bruta (A-B)
+            bruto = preco_venda - custo_produto
+            porcent_receita = (bruto * 100) / preco_venda
+            
+            #Custo fixo/administrativo
+            ValorCustoFixo = preco_venda * custo_fixo / 100
+            
+            #Comissão de venda 
+            ValorComissaoVendas = preco_venda * comissao_venda / 100
+            
+            #Imposto
+            ValorImpostoVenda = preco_venda * imposto_venda / 100
+            
+            #Outros custos (D+E+F)
+            resto = ValorCustoFixo + ValorComissaoVendas + ValorImpostoVenda
+            porcent_outros = custo_fixo + comissao_venda + imposto_venda
+            
+            #Rentabilidade (C-G)
+            rentabilidade = bruto - resto
+                    
+            print(f"\nProduto: {nome_prod}\n")
+            print(f"Preço de venda: R${round(preco_venda):.2f} 100% do valor final\n")
+            print(f"Preço do custo de aquisição: R${round(custo_produto):.2f} - {round(porcent_custo):.2f}%\n")
+            print(f"Receita bruta: R${round(bruto):.2f} - {round(porcent_receita):.2f}%\n")
+            print(f"Valor do custo fixo/administrativo: R${round(ValorCustoFixo):.2f} - {round(custo_fixo):.2f}%\n")
+            print(f"Valor da comissão de vendas: R${round(ValorComissaoVendas):.2f} - {round(comissao_venda):.2f}%\n")
+            print(f"Valor do imposto sobre a venda: R${round(ValorImpostoVenda):.2f} - {round(imposto_venda):.2f}%\n")
+            print(f"Valor de outros custos: R${round(resto):.2f} - {round(porcent_outros):.2f}%\n")
+            print(f"Rentabilidade: R${round(rentabilidade):.2f} - {round(margem_lucro):.2f}%\n")
 
-        inserir_calculos(preco_venda, bruto, ValorCustoFixo, ValorComissaoVendas, ValorImpostoVenda, resto, rentabilidade)
-        novosCalculos = retornoCalculos()
-        print(tabulate(novosCalculos, headers=col_names))
-    #Erro caso seja negativo o número
+            #Margem de lucro 
+            if rentabilidade >= 0.20 * preco_venda:
+                print('Sua classificação é de nível alto')
+            elif 0.10 * preco_venda <= rentabilidade < 0.20 * preco_venda:
+                print('Sua classificação é de nível médio')
+            elif 0 <= rentabilidade < 0.10 * preco_venda:
+                print('Sua classificação é de nível baixo')
+            elif rentabilidade == 0:
+                print('Sua classificação é de nível equilibrado')
+            else:
+                print('Você está com prejuízo')
+
     except ValueError as e:
         print(e)
     except Exception as e:
@@ -166,5 +154,5 @@ while True:
         else:
             break
         
-    if resposta =="N":
+    if resposta == "N":
         break
