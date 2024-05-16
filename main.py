@@ -6,6 +6,8 @@ from decimal import Decimal
 #Para pegar somente os que foi transferido para o BD na hora, para fazer o print dos dados bonitnho.
 from datetime import datetime
 
+#Printar em tabela 
+from tabulate import tabulate 
 conexao_mysql = None
 #Função para conectar no BD
 def obtemConexaoComMySQL(servidor, usuario, senha, bd): 
@@ -39,9 +41,6 @@ def retornoDados():
     dadosSelecionados = cursor.fetchall()
     cursor.close()
     conexao.close()
-<<<<<<< HEAD
-    return dadosSelecionados
-=======
     
     # Converter os valores Decimal para float
     dados_convertidos = []
@@ -53,7 +52,6 @@ def retornoDados():
         dados_convertidos.append(produto_convertido)
     
     return dados_convertidos
->>>>>>> hotfix
 
 print("Seja Bem-vindo ao PYEstoque\n")
 print("Comece agora e simplifique sua vida empresarial.\n")
@@ -94,59 +92,38 @@ while True:
         
         #Pega os valores do bando de dados para usar nas contas
         for produto in dados_produtos:
-<<<<<<< HEAD
-            cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, margem_lucro, data_insercao = produto 
-            
-            preco_venda = Decimal(str(custo_produto)) / (Decimal('1') - ((Decimal(str(custo_fixo)) + Decimal(str(comissao_venda)) + Decimal(str(imposto_venda)) + Decimal(str(margem_lucro))) / Decimal('100')))
-        
-            porcent_custo = Decimal(str(custo_produto * 100 / preco_venda))
-            
-            bruto = Decimal(str(preco_venda - custo_produto))
-            porcent_receita = Decimal(str((bruto * 100) / preco_venda))
-            
-            ValorCustoFixo = Decimal(str(preco_venda * custo_fixo / 100))
-            
-            ValorComissaoVendas = Decimal(str(preco_venda * comissao_venda / 100))
-            
-            ValorImpostoVenda = Decimal(str(preco_venda * imposto_venda / 100))
-            
-            resto = Decimal(str(ValorCustoFixo + ValorComissaoVendas + ValorImpostoVenda))
-            porcent_outros = Decimal(str(custo_fixo + comissao_venda + imposto_venda))
-            
-            rentabilidade = Decimal(str(bruto - resto))
-                    
-            print(f"\nProduto: {nome_prod}\n")
-            print(f"Preço de venda: R${preco_venda} 100% do valor final\n")
-=======
             cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, margem_lucro, data_insercao = produto
             
-            #Calculando preço de venda
             preco_venda = custo_produto / (1 - ((custo_fixo + comissao_venda + imposto_venda + margem_lucro) / 100))
         
-            #Custo de aquisição (Fornecedor)
             porcent_custo = custo_produto * 100 / preco_venda
             
-            #Receita bruta (A-B)
             bruto = preco_venda - custo_produto
             porcent_receita = (bruto * 100) / preco_venda
             
-            #Custo fixo/administrativo
             ValorCustoFixo = preco_venda * custo_fixo / 100
             
-            #Comissão de venda 
             ValorComissaoVendas = preco_venda * comissao_venda / 100
             
-            #Imposto
             ValorImpostoVenda = preco_venda * imposto_venda / 100
             
-            #Outros custos (D+E+F)
             resto = ValorCustoFixo + ValorComissaoVendas + ValorImpostoVenda
             porcent_outros = custo_fixo + comissao_venda + imposto_venda
             
-            #Rentabilidade (C-G)
             rentabilidade = bruto - resto
                     
+            tabela_dados = [
+            ["Preço de venda", f"R${preco_venda}", "100%"],
+            ["Preço do custo de aquisição", f"R${round(custo_produto):.2f}", f"{round(porcent_custo):.2f}%"],
+            ["Receita bruta", f"R${round(bruto):.2f}", f"{round(porcent_receita):.2f}%"],
+            ["Valor do custo fixo/administrativo", f"R${round(ValorCustoFixo):.2f}", f"{round(custo_fixo):.2f}%"],
+            ["Valor da comissão de vendas", f"R${round(ValorComissaoVendas):.2f}", f"{round(comissao_venda):.2f}%"],
+            ["Valor do imposto sobre a venda", f"R${round(ValorImpostoVenda):.2f}", f"{round(imposto_venda):.2f}%"],
+            ["Valor de outros custos", f"R${round(resto):.2f}", f"{round(porcent_outros):.2f}%"],
+            ["Rentabilidade", f"R${rentabilidade:.2f}", f"{round(margem_lucro):.2f}%"],
+            ]
             print(f"\nProduto: {nome_prod}\n")
+<<<<<<< HEAD
             print(f"Preço de venda: R${round(preco_venda):.2f} 100% do valor final\n")
 >>>>>>> hotfix
             print(f"Preço do custo de aquisição: R${round(custo_produto):.2f} - {round(porcent_custo):.2f}%\n")
@@ -163,16 +140,20 @@ while True:
 
             #Margem de lucro 
 >>>>>>> hotfix
+=======
+            # Use a função tabulate para formatar os dados em uma tabela
+            print(tabulate(tabela_dados, headers=["Descrição", "Valor", "Porcentagem"]))
+
             if rentabilidade >= 0.20 * preco_venda:
-                print('Sua classificação é de nível alto')
+                print('\nSua classificação é de nível alto')
             elif 0.10 * preco_venda <= rentabilidade < 0.20 * preco_venda:
-                print('Sua classificação é de nível médio')
+                print('\nSua classificação é de nível médio')
             elif 0 <= rentabilidade < 0.10 * preco_venda:
-                print('Sua classificação é de nível baixo')
+                print('\nSua classificação é de nível baixo')
             elif rentabilidade == 0:
-                print('Sua classificação é de nível equilibrado')
+                print('\nSua classificação é de nível equilibrado')
             else:
-                print('Você está com prejuízo')
+                print('\nVocê está com prejuízo')
 
     except ValueError as e:
         print(e)
