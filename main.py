@@ -3,7 +3,7 @@ from mysql.connector import connect
 #Importa decimal para float, pois estamos pegando dados do BD para fazer contas em python.
 from decimal import Decimal
 
-#Para pegar somente os que foi transferido para o BD na hora, para fazer o print dos dados bonitnho.
+#Para pegar somente os que foi transferido para o BD na hora, para fazer o print dos dados bonitinho.
 from datetime import datetime
 
 #Printar em tabela 
@@ -113,14 +113,14 @@ while True:
             rentabilidade = bruto - resto
                     
             tabela_dados = [
-            ["Preço de venda", f"R${preco_venda}", "100%"],
+            ["Preço de venda", f"R${round(preco_venda):.2f}", "100%"],
             ["Preço do custo de aquisição", f"R${round(custo_produto):.2f}", f"{round(porcent_custo):.2f}%"],
             ["Receita bruta", f"R${round(bruto):.2f}", f"{round(porcent_receita):.2f}%"],
             ["Valor do custo fixo/administrativo", f"R${round(ValorCustoFixo):.2f}", f"{round(custo_fixo):.2f}%"],
             ["Valor da comissão de vendas", f"R${round(ValorComissaoVendas):.2f}", f"{round(comissao_venda):.2f}%"],
             ["Valor do imposto sobre a venda", f"R${round(ValorImpostoVenda):.2f}", f"{round(imposto_venda):.2f}%"],
             ["Valor de outros custos", f"R${round(resto):.2f}", f"{round(porcent_outros):.2f}%"],
-            ["Rentabilidade", f"R${rentabilidade:.2f}", f"{round(margem_lucro):.2f}%"],
+            ["Rentabilidade", f"R${round(rentabilidade):.2f}", f"{round(margem_lucro):.2f}%"],
             ]
             print(f"\nProduto: {nome_prod}\n")
             # Use a função tabulate para formatar os dados em uma tabela
