@@ -56,11 +56,102 @@ def retornoDados():
 print("Seja Bem-vindo ao PYEstoque\n")
 print("Comece agora e simplifique sua vida empresarial.\n")
 
-while True:
+def umTexto(mensagem, mensagem_erro, opcoes_validas):
+    while True:
+        entrada = input(mensagem)
+        if entrada in opcoes_validas:
+            return entrada
+        else:
+            print(mensagem_erro)
+
+def opcaoEscolhida(mnu):
+    print()
+    opcoesValidas = []
+    posicao = 0
+    while posicao < len(mnu):
+        print(posicao + 1, ') ', mnu[posicao], sep='')
+        opcoesValidas.append(str(posicao + 1))
+        posicao += 1
+    print()
+    return umTexto('Qual é a sua opção? ', 'Opção inválida', opcoesValidas)
+
+def inserir_produto():
     try:
         cod_prod = input('Digite o código do produto: ')
         nome_prod = input('Digite o nome do produto: ')
         descri_prod = input('Digite a Descrição do produto: ')
+
+        # Lógica para inserir o produto no banco de dados
+        inserirValores(cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, margem_lucro)
+        
+        print("Produto inserido com sucesso!")
+        
+        # Pergunta se deseja incluir outro produto
+        while True:
+            resposta = input("\nDeseja incluir outro produto (S/N)? ").upper()
+            if resposta == "S":
+                break
+            elif resposta == "N":
+                return
+            else:
+                print("Resposta inválida! Por favor, digite 'S' para Sim ou 'N' para Não.")
+
+    except Exception as e:
+        print("Erro ao inserir produto:", e)
+
+while True:
+    inserir_produto()
+
+def listar_produtos(produtos):
+    try:
+    conexao = connect(host="127.0.0.1", user="root", password="Cauekenzo071525.", database="puccamp")
+    consulta_sql = "SELECT * FROM tbl_produtos"
+    cursor = conexao.cursor()
+    cursor.execute(consulta_sql)
+    linhas = cursor.fetchall()
+    print("Número total de Registro retornados:", cursor.rowcount)
+    print("\nMostrar os Produtos cadastrados")
+    for linha in linhas:
+        print("Id:", linha[0])
+        print("Nome:", linha[1])
+        print("Descrição:", linha[2], "\n")
+except Error as e:
+    print("Erro ao acessar tabela MySQL:", e)
+finally:
+    if conexao.is_connected():
+        conexao.close()
+        cursor.close()
+        print("Conexão ao MySQL encerrada")
+
+def atualizar_produto(produtos):
+    if not produtos:
+        print("Nenhum produto cadastrado para atualizar.")
+    else:
+        listar_produtos(produtos)
+        escolha = int(input("Digite o número do produto que deseja atualizar: "))
+        if escolha < 1 or escolha > len(produtos):
+            print("Número de produto inválido.")
+            return
+        nome_novo = input("Digite o novo nome do produto: ")
+        preco_novo = float(input("Digite o novo preço do produto: "))
+        produtos[escolha - 1]["Nome"] = nome_novo
+        produtos[escolha - 1]["Preço"] = preco_novo
+        print("Produto atualizado com sucesso!")
+
+menu = ['Incluir Produto', 'Listar Produtos', 'Atualizar Produto', 'Sair do Programa']
+
+produtos = []  # Inicialização da lista de produtos
+
+opcao = 0
+while opcao != 4:
+    opcao = int(opcaoEscolhida(menu))
+
+    if opcao == 1:
+        incluir_produto(produtos)
+    elif opcao == 2:
+        listar_produtos(produtos)
+    elif opcao == 3:
+        atualizar_produto(produtos)
 
         def verificar_negativo(num):
             if num < 0:
