@@ -7,6 +7,23 @@ from decimal import Decimal
 from datetime import datetime
 
 #Printar em tabela 
+from tabulate import tabulate 
+conexao_mysql = None
+#Função para conectar no BD
+def obtemConexaoComMySQL (servidor, usuario, senha, bd): 
+    if obtemConexaoComMySQL.conexao==None:
+        obtemConexaoComMySQL.conexao = \
+        connect(host=servidor, user=usuario, passwd=senha, database=bd) 
+    return obtemConexaoComMySQL.conexao
+obtemConexaoComMySQL.conexao=None
+
+#Importa decimal para float, pois estamos pegando dados do BD para fazer contas em python.
+from decimal import Decimal
+
+#Para pegar somente os que foi transferido para o BD na hora, para fazer o print dos dados bonitnho.
+from datetime import datetime
+
+#Printar em tabela 
 from tabulate import tabulate
 
 conexao_mysql = None
@@ -99,7 +116,7 @@ def listar_produtos(produtos):
             print("Id:", linha[0])
             print("Nome:", linha[1])
             print("Descrição:", linha[2], "\n")
-    except Error as e:
+    except Exception as e:
         print("Erro ao acessar tabela MySQL:", e)
     finally:
         if conexao.is_connected():
@@ -123,109 +140,111 @@ def atualizar_produto(produtos):
         produtos[escolha - 1]["Preço"] = preco_novo
         print("Produto atualizado com sucesso!")
 
-menu = ['Incluir Produto', 'Listar Produtos', 'Atualizar Produto', 'Sair do Programa']
+    menu = ['Incluir Produto', 'Listar Produtos', 'Atualizar Produto', 'Sair do Programa']
 
-produtos = []  # Inicialização da lista de produtos
+    produtos = []  # Inicialização da lista de produtos
 
-opcao = 0
-while opcao != 4:
-    opcao = int(opcaoEscolhida(menu))
+    opcao = 0
+    while opcao != 4:
+        opcao = int(escolha(menu))
 
-    if opcao == 1:
-        inserir_produto()
-    elif opcao == 2:
-        listar_produtos(produtos)
-    elif opcao == 3:
-        atualizar_produto(produtos)
+        if opcao == 1:
+            inserir_produto()
+        elif opcao == 2:
+            listar_produtos(produtos)
+        elif opcao == 3:
+            atualizar_produto(produtos)
 
-        def verificar_negativo(num):
-            if num < 0:
-                raise ValueError("Erro: O número não pode ser negativo.")
-            return num
-        
-        custo_produto = float(input("\nQual o custo do produto? ").replace(",","."))
-        custo_produto = verificar_negativo(custo_produto)
-        
-        custo_fixo = float(input("\nQual o custo fixo/administrativo? ").replace(",","."))
-        custo_fixo = verificar_negativo(custo_fixo)
-        
-        comissao_venda = float(input("\nQual a comissão de vendas(%)?").replace(",","."))
-        comissao_venda = verificar_negativo(comissao_venda)
-        
-        imposto_venda = float(input("\nQual é o imposto sobre a venda(%)? ").replace(",","."))
-        imposto_venda = verificar_negativo(imposto_venda)
-        
-        margem_lucro = float(input("\nQual a margem de lucro desejada(%)? ").replace(",","."))
-        margem_lucro = verificar_negativo(margem_lucro)
-        
-        #Inseri valores no BD
-        inserirValores(cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, margem_lucro)
-        
-        #Recebe os valores do BD e printa
-        dados_produtos = retornoDados()
-        print("\nDados inseridos na tabela PRODUTOS:\n")
-        print(dados_produtos)
-        
-        #Pega os valores do bando de dados para usar nas contas
-        for produto in dados_produtos:
-            cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, margem_lucro, data_insercao = produto
-            
-            preco_venda = custo_produto / (1 - ((custo_fixo + comissao_venda + imposto_venda + margem_lucro) / 100))
-        
-            porcent_custo = custo_produto * 100 / preco_venda
-            
-            bruto = preco_venda - custo_produto
-            porcent_receita = (bruto * 100) / preco_venda
-            
-            ValorCustoFixo = preco_venda * custo_fixo / 100
-            
-            ValorComissaoVendas = preco_venda * comissao_venda / 100
-            
-            ValorImpostoVenda = preco_venda * imposto_venda / 100
-            
-            resto = ValorCustoFixo + ValorComissaoVendas + ValorImpostoVenda
-            porcent_outros = custo_fixo + comissao_venda + imposto_venda
-            
-            rentabilidade = bruto - resto
-                    
-            tabela_dados = [
-            ["Preço de venda", f"R${preco_venda}", "100%"],
-            ["Preço do custo de aquisição", f"R${round(custo_produto):.2f}", f"{round(porcent_custo):.2f}%"],
-            ["Receita bruta", f"R${round(bruto):.2f}", f"{round(porcent_receita):.2f}%"],
-            ["Valor do custo fixo/administrativo", f"R${round(ValorCustoFixo):.2f}", f"{round(custo_fixo):.2f}%"],
-            ["Valor da comissão de vendas", f"R${round(ValorComissaoVendas):.2f}", f"{round(comissao_venda):.2f}%"],
-            ["Valor do imposto sobre a venda", f"R${round(ValorImpostoVenda):.2f}", f"{round(imposto_venda):.2f}%"],
-            ["Valor de outros custos", f"R${round(resto):.2f}", f"{round(porcent_outros):.2f}%"],
-            ["Rentabilidade", f"R${rentabilidade:.2f}", f"{round(margem_lucro):.2f}%"],
-            ]
-            print(f"\nProduto: {nome_prod}\n")
-            # Use a função tabulate para formatar os dados em uma tabela
-            print(tabulate(tabela_dados, headers=["Descrição", "Valor", "Porcentagem"]))
+def verificar_negativo(num):
+    if num < 0:
+        raise ValueError("Erro: O número não pode ser negativo.")
+    return num
 
-            if rentabilidade >= 0.20 * preco_venda:
-                print('\nSua classificação é de nível alto')
-            elif 0.10 * preco_venda <= rentabilidade < 0.20 * preco_venda:
-                print('\nSua classificação é de nível médio')
-            elif 0 <= rentabilidade < 0.10 * preco_venda:
-                print('\nSua classificação é de nível baixo')
-            elif rentabilidade == 0:
-                print('\nSua classificação é de nível equilibrado')
+while True:
+        try:    
+            custo_produto = float(input("\nQual o custo do produto? ").replace(",","."))
+            custo_produto = verificar_negativo(custo_produto)
+        
+            custo_fixo = float(input("\nQual o custo fixo/administrativo? ").replace(",","."))
+            custo_fixo = verificar_negativo(custo_fixo)
+            
+            comissao_venda = float(input("\nQual a comissão de vendas(%)?").replace(",","."))
+            comissao_venda = verificar_negativo(comissao_venda)
+            
+            imposto_venda = float(input("\nQual é o imposto sobre a venda(%)? ").replace(",","."))
+            imposto_venda = verificar_negativo(imposto_venda)
+            
+            margem_lucro = float(input("\nQual a margem de lucro desejada(%)? ").replace(",","."))
+            margem_lucro = verificar_negativo(margem_lucro)
+            
+            #Inseri valores no BD
+            inserirValores(cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, margem_lucro)
+            
+            #Recebe os valores do BD e printa
+            dados_produtos = retornoDados()
+            print("\nDados inseridos na tabela PRODUTOS:\n")
+            print(dados_produtos)
+            
+            #Pega os valores do bando de dados para usar nas contas
+            for produto in dados_produtos:
+                cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, margem_lucro, data_insercao = produto
+                
+                preco_venda = custo_produto / (1 - ((custo_fixo + comissao_venda + imposto_venda + margem_lucro) / 100))
+            
+                porcent_custo = custo_produto * 100 / preco_venda
+                
+                bruto = preco_venda - custo_produto
+                porcent_receita = (bruto * 100) / preco_venda
+                
+                ValorCustoFixo = preco_venda * custo_fixo / 100
+                
+                ValorComissaoVendas = preco_venda * comissao_venda / 100
+                
+                ValorImpostoVenda = preco_venda * imposto_venda / 100
+                
+                resto = ValorCustoFixo + ValorComissaoVendas + ValorImpostoVenda
+                porcent_outros = custo_fixo + comissao_venda + imposto_venda
+                
+                rentabilidade = bruto - resto
+                        
+                tabela_dados = [
+                ["Preço de venda", f"R${preco_venda}", "100%"],
+                ["Preço do custo de aquisição", f"R${round(custo_produto):.2f}", f"{round(porcent_custo):.2f}%"],
+                ["Receita bruta", f"R${round(bruto):.2f}", f"{round(porcent_receita):.2f}%"],
+                ["Valor do custo fixo/administrativo", f"R${round(ValorCustoFixo):.2f}", f"{round(custo_fixo):.2f}%"],
+                ["Valor da comissão de vendas", f"R${round(ValorComissaoVendas):.2f}", f"{round(comissao_venda):.2f}%"],
+                ["Valor do imposto sobre a venda", f"R${round(ValorImpostoVenda):.2f}", f"{round(imposto_venda):.2f}%"],
+                ["Valor de outros custos", f"R${round(resto):.2f}", f"{round(porcent_outros):.2f}%"],
+                ["Rentabilidade", f"R${rentabilidade:.2f}", f"{round(margem_lucro):.2f}%"],
+                ]
+                print(f"\nProduto: {nome_prod}\n")
+                # Use a função tabulate para formatar os dados em uma tabela
+                print(tabulate(tabela_dados, headers=["Descrição", "Valor", "Porcentagem"]))
+
+                if rentabilidade >= 0.20 * preco_venda:
+                    print('\nSua classificação é de nível alto')
+                elif 0.10 * preco_venda <= rentabilidade < 0.20 * preco_venda:
+                    print('\nSua classificação é de nível médio')
+                elif 0 <= rentabilidade < 0.10 * preco_venda:
+                    print('\nSua classificação é de nível baixo')
+                elif rentabilidade == 0:
+                    print('\nSua classificação é de nível equilibrado')
+                else:
+                    print('\nVocê está com prejuízo')
+
+        except ValueError as e:
+            print(e)
+        except Exception as e:
+            print("Um erro ocorreu:", e)
+        except ValueError:
+            print("Somente unidades numéricas!")
+        
+        while True:
+            resposta = input("\nDeseja continuar adicionando produtos (S/N)?").upper()
+            if resposta not in ["S", "N"]:
+                print("A resposta deve ser S ou N; tente novamente!")
             else:
-                print('\nVocê está com prejuízo')
-
-    except ValueError as e:
-        print(e)
-    except Exception as e:
-        print("Um erro ocorreu:", e)
-    except ValueError:
-        print("Somente unidades numéricas!")
-        
-    while True:
-        resposta = input("\nDeseja continuar adicionando produtos (S/N)?").upper()
-        if resposta not in ["S", "N"]:
-            print("A resposta deve ser S ou N; tente novamente!")
-        else:
-            break
-        
-    if resposta == "N":
-        break
+                break
+            
+            if resposta == "N":
+                break 
