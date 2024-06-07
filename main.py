@@ -66,24 +66,24 @@ def sistema_login():
         opcao = input("\nEscolha uma opção: \n1. Registrar\n2. Login\n3. Sair\nOpção: ")
 
         if opcao == "1":
-            username = input("Digite o nome de usuário: ")
+            username = input("\nDigite o nome de usuário: ")
             senha = input("Digite a senha: ")
             cadastrar_usuario(username, senha)
 
         elif opcao == "2":
-            username = input("Digite o nome de usuário: ")
+            username = input("\nDigite o nome de usuário: ")
             senha = input("Digite a senha: ")
             user_id = verificar_usuario(username, senha)
             if user_id:
                 return user_id  # Retorna o id do usuário após login bem-sucedido
             else:
-                print("Falha na autenticação. Tente novamente.")
+                print("\nFalha na autenticação. Tente novamente.")
 
         elif opcao == "3":
             return None  # Indica que o usuário escolheu sair
 
         else:
-            print("Opção inválida. Por favor, escolha uma opção válida de 1 a 3.")
+            print("\nOpção inválida. Por favor, escolha uma opção válida de 1 a 3.")
 
 def inserirValores(cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, comissao_venda, imposto_venda, margem_lucro, user_id):
     comando = "INSERT INTO PRODUTOS (cod_prod, nome_prod, descri_prod, custo_prod, custo_fixo, comissao_venda, imposto_venda, margem_lucro, data_insercao, user_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW(), %s)"
@@ -104,7 +104,7 @@ def inserirValores(cod_prod, nome_prod, descri_prod, custo_produto, custo_fixo, 
         print("Erro ao inserir os valores:", e)
 
 def obter_dados_produto():
-    cod_prod = input('Digite o código do produto: ')
+    cod_prod = input('\nDigite o código do produto: ')
     nome_prod = input('Digite o nome do produto: ')
     descri_prod = input('Digite a Descrição do produto: ')
     return cod_prod, nome_prod, descri_prod
@@ -143,7 +143,7 @@ def calcular_detalhes_produto(produto):
         ["Valor da comissão de vendas", f"R${ValorComissaoVendas:.2f}", f"{comissao_venda:.2f}%"],
         ["Valor do imposto sobre a venda", f"R${ValorImpostoVenda:.2f}", f"{imposto_venda:.2f}%"],
         ["Valor de outros custos", f"R${resto:.2f}", f"{porcent_outros:.2f}%"],
-        ["Rentabilidade", f"R${rentabilidade:.2f}", f"{margem_lucro:.2f}%"],
+        ["Rentabilidade", f"R${rentabilidade:.2f}", f"{margem_lucro:.2f}%\n"],
     ]
     print(f"\nProduto: {nome_prod}\n")
     print(tabulate(tabela_dados, headers=["Descrição", "Valor", "Porcentagem"]))
@@ -158,6 +158,77 @@ def calcular_detalhes_produto(produto):
         print('\nSua classificação é de nível equilibrado')
     else:
         print('\nVocê está com prejuízo')
+
+def atualizar_produto(user_id, cod_prod):
+    conexao = obtemConexaoComMySQL("127.0.0.1", "root", "Cauekenzo071525.", "puccamp")
+    if conexao is None:
+        print("Falha ao conectar ao banco de dados. Não foi possível atualizar o produto.")
+        return
+
+    comando = "SELECT * FROM PRODUTOS WHERE cod_prod = %s AND user_id = %s"
+    valores = (cod_prod, user_id)
+
+    try:
+        cursor = conexao.cursor()
+        cursor.execute(comando, valores)
+        produto = cursor.fetchone()
+        cursor.close()
+
+        if produto:
+            print("\nProduto encontrado. Escolha a informação que deseja atualizar:")
+            print("1. Nome do produto")
+            print("2. Descrição do produto")
+            print("3. Custo de aquisição do produto")
+            print("4. Custo fixo/administrativo")
+            print("5. Comissão de vendas")
+            print("6. Imposto sobre a venda")
+            print("7. Margem de lucro")
+            opcao = input("Opção: ")
+
+            if opcao == "1":
+                nome_prod = input('Digite o novo nome do produto: ')
+                comando_update = "UPDATE PRODUTOS SET nome_prod = %s WHERE cod_prod = %s AND user_id = %s"
+                valores_update = (nome_prod, cod_prod, user_id)
+            elif opcao == "2":
+                descri_prod = input('Digite a nova descrição do produto: ')
+                comando_update = "UPDATE PRODUTOS SET descri_prod = %s WHERE cod_prod = %s AND user_id = %s"
+                valores_update = (descri_prod, cod_prod, user_id)
+            elif opcao == "3":
+                custo_produto = verificar_negativo(Decimal(input('Digite o novo custo de aquisição do produto: ')))
+                comando_update = "UPDATE PRODUTOS SET custo_prod = %s WHERE cod_prod = %s AND user_id = %s"
+                valores_update = (custo_produto, cod_prod, user_id)
+            elif opcao == "4":
+                custo_fixo = verificar_negativo(Decimal(input('Digite o novo custo fixo/administrativo: ')))
+                comando_update = "UPDATE PRODUTOS SET custo_fixo = %s WHERE cod_prod = %s AND user_id = %s"
+                valores_update = (custo_fixo, cod_prod, user_id)
+            elif opcao == "5":
+                comissao_venda = verificar_negativo(Decimal(input('Digite a nova comissão de vendas: ')))
+                comando_update = "UPDATE PRODUTOS SET comissao_venda = %s WHERE cod_prod = %s AND user_id = %s"
+                valores_update = (comissao_venda, cod_prod, user_id)
+            elif opcao == "6":
+                imposto_venda = verificar_negativo(Decimal(input('Digite o novo imposto sobre a venda: ')))
+                comando_update = "UPDATE PRODUTOS SET imposto_venda = %s WHERE cod_prod = %s AND user_id = %s"
+                valores_update = (imposto_venda, cod_prod, user_id)
+            elif opcao == "7":
+                margem_lucro = verificar_negativo(Decimal(input('Digite a nova margem de lucro: ')))
+                comando_update = "UPDATE PRODUTOS SET margem_lucro = %s WHERE cod_prod = %s AND user_id = %s"
+                valores_update = (margem_lucro, cod_prod, user_id)
+            else:
+                print("Opção inválida.")
+                return
+
+            try:
+                cursor = conexao.cursor()
+                cursor.execute(comando_update, valores_update)
+                conexao.commit()
+                cursor.close()
+                print("Produto atualizado com sucesso!")
+            except Exception as e:
+                print("Erro ao atualizar o produto:", e)
+        else:
+            print("\nProduto não encontrado para o usuário atual.")
+    except Exception as e:
+        print("Erro ao buscar o produto:", e)
 
 def listar_produtos(user_id):
     try:
@@ -192,16 +263,34 @@ def listar_produtos(user_id):
     except Exception as e:
         print("Erro ao listar os produtos:", e)
 
+def remover_produto(cod_prod, user_id):
+    comando = "DELETE FROM PRODUTOS WHERE cod_prod = %s AND user_id = %s"
+    valores = (cod_prod, user_id)
+    conexao = obtemConexaoComMySQL("127.0.0.1", "root", "Cauekenzo071525.", "puccamp")
+    if conexao is None:
+        print("Falha ao conectar ao banco de dados. Não foi possível remover o produto.")
+        return
+
+    try:
+        cursor = conexao.cursor()
+        cursor.execute(comando, valores)
+        conexao.commit()
+        cursor.close()
+        conexao.close()
+        print("\nProduto removido com sucesso!")
+    except Exception as e:
+        print("Erro ao remover o produto:", e)
+
 def main():
     user_id = sistema_login()
     if user_id:
         while True:
-            opcao = input("Digite 1 para cadastrar um produto\nDigite 2 para listar todos os produtos cadastrados\nDigite 3 para sair: ")
+            opcao = input("\nDigite 1 para cadastrar um produto\nDigite 2 para listar todos os produtos cadastrados\nDigite 3 para atualiza\nDigite 4 para remover produto,\nDigite 5 para sair: ")
 
             if opcao == "1":
                 try:
                     cod_prod, nome_prod, descri_prod = obter_dados_produto()
-                    custo_produto = verificar_negativo(Decimal(input('Digite o custo de aquisição do produto: ')))
+                    custo_produto = verificar_negativo(Decimal(input('\nDigite o custo de aquisição do produto: ')))
                     custo_fixo = verificar_negativo(Decimal(input('Digite o custo fixo/administrativo: ')))
                     comissao_venda = verificar_negativo(Decimal(input('Digite a comissão de vendas: ')))
                     imposto_venda = verificar_negativo(Decimal(input('Digite o imposto sobre a venda: ')))
@@ -216,13 +305,21 @@ def main():
 
             elif opcao == "2":
                 listar_produtos(user_id)
-
+            
             elif opcao == "3":
-                print("Saindo do sistema. Até a próxima!")
+                cod_prod = input("Digite o código do produto que deseja atualizar: ")
+                atualizar_produto(user_id, cod_prod)
+            
+            elif opcao == "4":
+                cod_prod = input("Digite o código do produto que deseja remover: ") 
+                remover_produto(cod_prod, user_id)
+
+            elif opcao == "5":
+                print("\nSaindo do sistema. Até a próxima!")
                 break
 
             else:
-                print("Opção inválida. Por favor, escolha uma opção válida de 1 a 3.")
+                print("Opção inválida. Por favor, escolha uma opção válida de 1 a 4.")
 
 if __name__ == "__main__":
     main()
