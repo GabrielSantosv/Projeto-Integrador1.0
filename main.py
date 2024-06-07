@@ -59,7 +59,6 @@ def retornoDados():
     
     return dados_convertidos
 
-# Função para listar produtos
 # Função para listar produtos e calcular detalhes
 def listar_produtos():
     try:
